@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
@@ -9,6 +10,11 @@ public class PlayerController : MonoBehaviour
     public float walkSpeed = 2.5f;
     public float runSpeed = 5f;
     public float rotationSpeed = 10f;
+
+    [Header("점프 설정")]
+    public float jumpHeight = 2f;
+    public float gravity = -9.81f;
+    public float landingDuration = 0.3f;
 
     [Header("공격 설정")]
     public float attackDuration = 0.8f;                 //공격 지속 시간
@@ -23,6 +29,13 @@ public class PlayerController : MonoBehaviour
     //현재 상태
     private float currentSpeed;
     private bool isAttacking = false;
+    private bool isLanding = false;
+    private float landingTimer;
+
+    private Vector3 velocity;
+    private bool isGrounded;
+    private bool wasGrounded;
+    private float attackTimer;
 
     void Start()
     {
@@ -32,13 +45,104 @@ public class PlayerController : MonoBehaviour
 
     
     void Update()
-    {
+    { 
+        CheckGrounded();
+        HandleLanding();
         HandleMovement();
         UpdateAnimator();
+        HandleAttack();
+        HandleJump();
+    }
+
+    void CheckGrounded()
+    {
+        //이전 상태 저장
+        wasGrounded = isGrounded;
+        isGrounded = controller.isGrounded;         //캐릭터 컨트롤러에서 받아온다
+        
+        if(! isGrounded && wasGrounded)             //땅에서 떨어졌을때 (지금 프레임은 땅이 아니고 , 이전 프레임은 땅)
+        {
+            Debug.Log("떨어지기 시작");
+        }
+
+        if(isGrounded && velocity.y < 0)
+        {
+            velocity.y = -2f;
+
+            //착지 모션 트리거 및 착지 상태 시작
+            if(!wasGrounded && animator != null)
+            {
+                animator.SetTrigger("landTrigger");
+                isLanding = true;
+                landingTimer = landingDuration;
+                Debug.Log("착지");
+            }
+        }
+    }
+
+    void HandleLanding()
+    {
+        if(isLanding)
+        {
+            landingTimer -= Time.deltaTime;     //랜딩 타이머 시간 만큼 못움직임
+            if(landingTimer <= 0)
+            {
+                isLanding = false;          //착지 완료
+            }
+        }
+    }
+
+    void HandleAttack()
+    {
+        if (isAttacking)
+        {
+            attackTimer -= Time.deltaTime;
+            if (attackTimer <= 0)
+            {
+                isAttacking = false;
+            }
+            if (Input.GetKeyDown(KeyCode.Alpha1) && !isAttacking)
+            {
+                isAttacking = true;
+                attackTimer = attackDuration;
+
+                if (animator != null)
+                {
+                    animator.SetTrigger("attackTrigger");
+                }
+            }
+        }
+    }
+
+    void HandleJump()
+    {
+        if(Input.GetButtonDown("Jump") && isGrounded)
+        {
+            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+
+            if(animator != null)
+            {
+                animator.SetTrigger("jumpTrigger");
+            }
+        }
+
+        if(!isGrounded)                                     //땅에 있지 않을 경우 중력 사용
+        {
+            velocity.y += gravity * Time.deltaTime;
+        }
+
+        controller.Move(velocity * Time.deltaTime);
     }
 
     void HandleMovement()           //이동 함수 제작
     {
+
+        if((isAttacking && !canMoveWhileAttacking) || isLanding)
+        {
+            currentSpeed = 0;
+            return;
+        }
+
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
 
@@ -78,5 +182,10 @@ public class PlayerController : MonoBehaviour
         //전체 최대속도(runSpeed)를 기준으로 0 ~ 1 계산
         float animatorSpeed = Mathf.Clamp01(currentSpeed / runSpeed);
         animator.SetFloat("speed", animatorSpeed);
+
+        animator.SetBool("isGrounded", isGrounded);
+        bool isFalling = !isGrounded && velocity.y < -0.1f;                         //캐릭터의 Y축 속도가 음수로 넘어가면 떨어지고 있다는 판단
+        animator.SetBool("isFalling", isFalling);
+        animator.SetBool("isLanding", isLanding);
     }
 }
