@@ -37,6 +37,8 @@ public class PlayerController : MonoBehaviour
     private bool wasGrounded;
     private float attackTimer;
 
+    private bool isUIMode = false;
+
     void Start()
     {
         controller = GetComponent<CharacterController>();
@@ -46,12 +48,20 @@ public class PlayerController : MonoBehaviour
     
     void Update()
     { 
-        CheckGrounded();
-        HandleLanding();
-        HandleMovement();
-        UpdateAnimator();
-        HandleAttack();
-        HandleJump();
+        if(Input.GetKeyDown(KeyCode.Tab))
+        {
+            ToggleCursorLock();
+        }
+
+        if (!isUIMode)
+        {
+            CheckGrounded();
+            HandleLanding();
+            HandleMovement();
+            UpdateAnimator();
+            HandleAttack();
+            HandleJump();
+        }
     }
 
     void CheckGrounded()
@@ -187,5 +197,31 @@ public class PlayerController : MonoBehaviour
         bool isFalling = !isGrounded && velocity.y < -0.1f;                         //캐릭터의 Y축 속도가 음수로 넘어가면 떨어지고 있다는 판단
         animator.SetBool("isFalling", isFalling);
         animator.SetBool("isLanding", isLanding);
+    }
+
+    public void SetCursorLock(bool LockCursor)
+    {
+        if(LockCursor)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+            isUIMode = false;
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            isUIMode = true;
+        }
+    }    
+    public void ToggleCursorLock()
+    {
+        bool shouldLock = Cursor.lockState != CursorLockMode.Locked;
+        SetCursorLock(shouldLock);
+    }
+
+    public void SetUIMode(bool uiMode)
+    {
+        SetCursorLock(!uiMode);
     }
 }
