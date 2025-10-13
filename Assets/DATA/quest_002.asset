@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 497517e582930ed4f95c1f23f7669950, type: 3}
   m_Name: quest_002
   m_EditorClassIdentifier: 
-  questTitle: "\uC0C8\uB85C\uC6B4 \uD018\uC2A4\uD2B8"
-  description: "\uD018\uC2A4\uD2B8 \uC124\uBA85\uC744 \uC785\uB825\uD558\uC138\uC694"
+  questTitle: "\uC0C1\uD638\uC791\uC6A9\uD558\uAE30"
+  description: "NPC\uB97C \uCC3E\uC544 \uC0C1\uD638\uC791\uC6A9\uD558\uC138\uC694!"
   question: {fileID: 0}
   questType: 0
   targetAmount: 1
