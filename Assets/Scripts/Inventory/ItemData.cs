@@ -9,4 +9,7 @@ public class ItemData : ScriptableObject
     public string itemName;
     public Sprite itemIcon;
     public int maxStack = 99;           //겹칠 수 있는 최대 개수
+
+    public bool isUsable = false;
+    public int healAmount = 0;
 }

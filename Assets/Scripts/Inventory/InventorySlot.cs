@@ -13,9 +13,20 @@ public class InventorySlot : MonoBehaviour
     public Text amountText;
     public GameObject emptySlotImage;
 
+    public Button slotButton;
+
     void Start()
     {
         UpdateSlotUI();
+        slotButton.onClick.AddListener(OnSlotClick);
+    }
+
+    void OnSlotClick()
+    {
+        if(item != null)
+        {
+            ItemUsePopup.instance.ShowPopup(item, this);
+        }
     }
 
     public void AddAmount(int value)
