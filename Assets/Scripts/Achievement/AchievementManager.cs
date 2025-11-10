@@ -32,6 +32,17 @@ public class AchievementManager : MonoBehaviour
         }
     }
 
+    void Start()
+    {
+        ResetAllAchivements();
+        foreach (AchievementType type in System.Enum.GetValues(typeof(AchievementType)))
+        {
+            progressData[type] = 0;
+        }
+        LoadAchievements();
+        UpdateAchievementUI();
+    }
+
     public float GetProgress(AchievementDATA achievement)
     {
         if (achievement.isUnlocked) return 1f;
@@ -113,5 +124,28 @@ public class AchievementManager : MonoBehaviour
         {
             GameObject popup = Instantiate(achievementPopupPrefab, popupParent);
         }
+    }
+
+    public void UpdateProgress(AchievementType type, int amount = 1)
+    {
+        progressData[type] += amount;
+
+        foreach(AchievementDATA achievement in allAchievements)
+        {
+            if(achievement.achievementType == type && !achievement.isUnlocked)
+            {
+                if (progressData[type] >= achievement.requiredAmount)
+                {
+                    UnlockAchivement(achievement);
+                }
+            }
+        }
+    }
+
+    void UnlockAchivement(AchievementDATA achievement)
+    {
+        achievement.isUnlocked = true;
+        ShowAchievementPopup(achievement);
+        UpdateAchievementUI();
     }
 }
